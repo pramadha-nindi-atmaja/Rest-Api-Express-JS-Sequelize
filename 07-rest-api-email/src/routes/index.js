@@ -1,9 +1,11 @@
 import express from "express";
 import userRouter from "./userRoute.js";
+import emailRouter from "./emailRoute.js";
 import { errorrHandling } from "../controllers/errorHandlingController.js";
 const route = express.Router();
 
 route.use("/api", userRouter);
+route.use("/api", emailRouter);
 route.use("*", errorrHandling);
 route.use("*", (req, res) => {
   res.status(404).json({
