@@ -101,6 +101,11 @@ const getContact = async (req, res, next) => {
       delete contacts.Addresses;
     }
 
+    // Get pagination parameters from query
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
     // filter address
     let objFilter = [];
     const filterAddress = await new Promise((resolve) => {
@@ -131,27 +136,61 @@ const getContact = async (req, res, next) => {
 
     // cek ada filter atau tidak
     let data = null;
+    let totalCount = 0;
+    
     if (Object.keys(filterAddress).length == 0) {
+      totalCount = await Contact.count({
+        where: filterContact,
+      });
+      
       data = await Contact.findAll({
         include: {
           model: Address,
         },
         where: filterContact,
+        limit: limit,
+        offset: offset,
+        order: [['createdAt', 'DESC']],
       });
     } else {
+      // For filtered queries, we need a more complex count
+      totalCount = await Contact.count({
+        include: [{
+          model: Address,
+          where: filterAddress,
+        }],
+        where: filterContact,
+      });
+      
       data = await Contact.findAll({
         include: {
           model: Address,
           where: filterAddress,
         },
         where: filterContact,
+        limit: limit,
+        offset: offset,
+        order: [['createdAt', 'DESC']],
       });
     }
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
 
     res.json({
       errors: [],
       message: "Get Contact successfully",
       data: data,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalCount: totalCount,
+        hasNextPage: hasNextPage,
+        hasPrevPage: hasPrevPage,
+        limit: limit,
+      }
     });
   } catch (error) {
     next(
@@ -366,4 +405,88 @@ const deleteContact = async (req, res, next) => {
   }
 };
 
-export { setContact, getContact, getContactById, updateContact, deleteContact };
+const searchContacts = async (req, res, next) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query) {
+      return res.status(400).json({
+        errors: ["Query parameter is required"],
+        message: "Search Contact Field",
+        data: null,
+      });
+    }
+    
+    // Search contacts by first name, last name, email, or phone
+    const contacts = await Contact.findAll({
+      where: {
+        [Op.or]: [
+          { firstName: { [Op.like]: `%${query}%` } },
+          { lastName: { [Op.like]: `%${query}%` } },
+          { email: { [Op.like]: `%${query}%` } },
+          { phone: { [Op.like]: `%${query}%` } },
+        ],
+      },
+      include: [{
+        model: Address,
+      }],
+    });
+    
+    return res.status(200).json({
+      errors: [],
+      message: "Contacts retrieved successfully",
+      data: contacts,
+    });
+  } catch (error) {
+    next(
+      new Error(
+        "controllers/contactController.js:searchContacts - " + error.message
+      )
+    );
+  }
+};
+
+const getContactStats = async (req, res, next) => {
+  try {
+    // Get total count of contacts
+    const totalContacts = await Contact.count();
+    
+    // Get count of contacts with addresses
+    const contactsWithAddress = await Contact.count({
+      include: [{
+        model: Address,
+        required: true
+      }]
+    });
+    
+    // Get count of contacts by address type
+    const addressTypes = await Address.findAll({
+      attributes: [
+        'addressType',
+        [sequelize.fn('COUNT', sequelize.col('addressType')), 'count']
+      ],
+      group: ['addressType']
+    });
+    
+    return res.status(200).json({
+      errors: [],
+      message: "Contact statistics retrieved successfully",
+      data: {
+        totalContacts,
+        contactsWithAddress,
+        addressTypes: addressTypes.map(item => ({
+          type: item.addressType,
+          count: item.get('count')
+        }))
+      }
+    });
+  } catch (error) {
+    next(
+      new Error(
+        "controllers/contactController.js:getContactStats - " + error.message
+      )
+    );
+  }
+};
+
+export { setContact, getContact, getContactById, updateContact, deleteContact, searchContacts, getContactStats };
