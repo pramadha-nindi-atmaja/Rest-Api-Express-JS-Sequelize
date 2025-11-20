@@ -243,3 +243,86 @@
   "data": null
 }
 ```
+
+## Search Contacts API
+
+- Endpoint : GET /api/contacts/search?query=:query
+- Header : Authorization : Bearer <access_token>
+- Response Success :
+
+```json
+{
+  "errors": null,
+  "message": "Search completed successfully",
+  "data": [
+    {
+      "id": 1,
+      "firstName": "Pojok",
+      "lastName": "Code",
+      "fullName": "Pojok Code",
+      "email": "email1@kontak.com",
+      "phone": "123456789",
+      "userId": "xxxxxxxxxxxxxxxxxxxxxxxxx",
+      "address": [
+        {
+          "id": 1,
+          "addressType": "Rumah",
+          "street": "Jl. Jalan",
+          "city": "Bandung",
+          "province": "Jawa Barat",
+          "country": "Indonesia",
+          "zipCode": "12345",
+          "contactId": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+- Response Error :
+
+```json
+{
+  "errors": ["Query parameter is required"],
+  "message": "Search failed",
+  "data": null
+}
+```
+
+## Contact Statistics API
+
+- Endpoint : GET /api/contacts/stats
+- Header : Authorization : Bearer <access_token>
+- Response Success :
+
+```json
+{
+  "errors": null,
+  "message": "Contact statistics retrieved successfully",
+  "data": {
+    "totalContacts": 10,
+    "contactsWithAddress": 8,
+    "addressTypes": [
+      {
+        "type": "Rumah",
+  "count": 5
+      },
+      {
+        "type": "Kantor",
+        "count": 3
+      }
+    ]
+  }
+}
+```
+
+- Response Error :
+
+```json
+{
+  "errors": ["Internal server error"],
+  "message": "Failed to retrieve statistics",
+  "data": null
+}
+```

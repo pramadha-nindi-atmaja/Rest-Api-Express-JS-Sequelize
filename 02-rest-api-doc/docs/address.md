@@ -198,3 +198,43 @@
   "data": null
 }
 ```
+
+## Address Statistics API
+
+- Endpoint : GET /api/contacts/stats
+- Header : Authorization : Bearer <acess_token>
+- Response Success :
+
+```json
+{
+  "errors": null,
+  "message": "Address statistics retrieved successfully",
+  "data": {
+    "totalAddresses": 15,
+    "addressTypes": [
+      {
+        "type": "Rumah",
+        "count": 8
+      },
+      {
+        "type": "Kantor",
+        "count": 5
+      },
+      {
+        "type": "Apartemen",
+        "count": 2
+      }
+    ]
+  }
+}
+```
+
+- Response Error :
+
+```json
+{
+  "errors": ["Internal server error"],
+  "message": "Failed to retrieve statistics",
+  "data": null
+}
+```

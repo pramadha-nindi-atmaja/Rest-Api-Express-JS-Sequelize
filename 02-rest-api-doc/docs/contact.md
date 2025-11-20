@@ -68,10 +68,13 @@
 }
 ```
 
-## Seach Contact API
+## Search Contact API
 
-- Endpoint : GET /api/contacts
+- Endpoint : GET /api/contacts?page=1&limit=10
 - Header : Authorization : Bearer <acess_token>
+- Query Parameters :
+  - page : Page number (default: 1)
+  - limit : Number of contacts per page (default: 10)
 - Request Body :
 
 ```json
@@ -80,7 +83,7 @@
 }
 ```
 
-- Response Sucess :
+- Response Success :
 
 ```json
 {
@@ -118,7 +121,15 @@
         }
       ]
     }
-  ]
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 5,
+    "totalCount": 50,
+    "hasNextPage": true,
+    "hasPrevPage": false,
+    "limit": 10
+  }
 }
 ```
 
