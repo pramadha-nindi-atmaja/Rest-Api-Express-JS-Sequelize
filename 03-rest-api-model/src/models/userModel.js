@@ -81,4 +81,21 @@ sequelize
     console.error("Error syncing the User model:", error.message);
   });
 
+// Add a method to get user statistics
+User.getStats = async function() {
+  const totalUsers = await User.count();
+  
+  const activeUsers = await User.count({
+    where: {
+      isActive: true
+    }
+  });
+  
+  return {
+    totalUsers,
+    activeUsers,
+    inactiveUsers: totalUsers - activeUsers
+  };
+};
+
 export default User;

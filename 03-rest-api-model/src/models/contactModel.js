@@ -76,4 +76,91 @@ sequelize
     console.error("Error syncing the Contact model:", error.message);
   });
 
+// Add a method to search contacts
+Contact.search = async function(query) {
+  return await Contact.findAll({
+    where: {
+      [Sequelize.Op.or]: [
+        { firstName: { [Sequelize.Op.like]: `%${query}%` } },
+        { lastName: { [Sequelize.Op.like]: `%${query}%` } },
+        { email: { [Sequelize.Op.like]: `%${query}%` } },
+        { phone: { [Sequelize.Op.like]: `%${query}%` } },
+      ],
+    },
+    include: [{
+      model: Address,
+    }],
+  });
+};
+
+// Add a method to get contact statistics
+Contact.getStats = async function() {
+  const totalContacts = await Contact.count();
+  
+  const contactsWithAddress = await Contact.count({
+    include: [{
+      model: Address,
+      required: true
+    }]
+  });
+  
+  const addressTypes = await Address.findAll({
+    attributes: [
+      'addressType',
+      [sequelize.fn('COUNT', sequelize.col('addressType')), 'count']
+    ],
+    group: ['addressType']
+  });
+  
+  return {
+    totalContacts,
+    contactsWithAddress,
+    addressTypes: addressTypes.map(item => ({
+      type: item.addressType,
+      count: item.get('count')
+    }))
+  };
+};
+
+// Add a method to get contacts with pagination
+Contact.paginate = async function(page = 1, limit = 10, filters = {}) {
+  const offset = (page - 1) * limit;
+  
+  // Build where clause from filters
+  const whereClause = {};
+  if (filters.firstName) {
+    whereClause.firstName = { [Sequelize.Op.like]: `%${filters.firstName}%` };
+  }
+  if (filters.lastName) {
+    whereClause.lastName = { [Sequelize.Op.like]: `%${filters.lastName}%` };
+  }
+  if (filters.email) {
+    whereClause.email = { [Sequelize.Op.like]: `%${filters.email}%` };
+  }
+  
+  const result = await Contact.findAndCountAll({
+    where: whereClause,
+    include: [{
+      model: Address,
+    }],
+    limit: limit,
+    offset: offset,
+    order: [['createdAt', 'DESC']],
+  });
+  
+  const totalPages = Math.ceil(result.count / limit);
+  
+  return {
+    contacts: result.rows,
+    pagination: {
+      currentPage: page,
+      totalPages: totalPages,
+      totalCount: result.count,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      limit: limit,
+    }
+  };
+};
+
 export default Contact;

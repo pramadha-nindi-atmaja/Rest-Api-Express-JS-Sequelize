@@ -72,4 +72,25 @@ sequelize
     console.error("Error syncing the Address model:", error.message);
   });
 
+// Add a method to get address statistics
+Address.getStats = async function() {
+  const totalAddresses = await Address.count();
+  
+  const addressTypes = await Address.findAll({
+    attributes: [
+      'addressType',
+      [sequelize.fn('COUNT', sequelize.col('addressType')), 'count']
+    ],
+    group: ['addressType']
+  });
+  
+  return {
+    totalAddresses,
+    addressTypes: addressTypes.map(item => ({
+      type: item.addressType,
+      count: item.get('count')
+    }))
+  };
+};
+
 export default Address; // Export the Address model
