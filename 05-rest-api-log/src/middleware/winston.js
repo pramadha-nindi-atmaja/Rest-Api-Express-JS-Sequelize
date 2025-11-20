@@ -1,5 +1,6 @@
 import winston from "winston";
 import "winston-daily-rotate-file";
+import Log from "../models/logModel.js";
 
 const transport = new winston.transports.DailyRotateFile({
   filename: "./logs/app-%DATE%.log",
@@ -33,5 +34,52 @@ const logger = winston.createLogger({
     transport,
   ],
 });
+
+// Middleware to log HTTP requests
+export const logHttpRequest = async (req, res, next) => {
+  // Capture the original send function to log response details
+  const originalSend = res.send;
+  let responseBody = {};
+  
+  res.send = function(data) {
+    try {
+      responseBody = JSON.parse(data);
+    } catch (e) {
+      responseBody = data;
+    }
+    return originalSend.call(this, data);
+  };
+  
+  // Log request details after response is sent
+  res.on('finish', async () => {
+    try {
+      // Extract IP address
+      const ipAddress = req.headers['x-forwarded-for'] || 
+                       req.connection.remoteAddress || 
+                       req.socket.remoteAddress ||
+                       (req.connection.socket ? req.connection.socket.remoteAddress : null);
+      
+      // Extract user agent
+      const userAgent = req.headers['user-agent'];
+      
+      // Extract user ID from request if available
+      const userId = req.user ? req.user.userId : null;
+      
+      // Create log entry
+      await Log.createLog(
+        userId,
+        `${req.method} ${req.originalUrl}`,
+        `Status: ${res.statusCode} - Response: ${JSON.stringify(responseBody).substring(0, 200)}`,
+        ipAddress,
+        userAgent,
+        res.statusCode
+      );
+    } catch (error) {
+      console.error('Failed to log HTTP request:', error.message);
+    }
+  });
+  
+  next();
+};
 
 export default logger;

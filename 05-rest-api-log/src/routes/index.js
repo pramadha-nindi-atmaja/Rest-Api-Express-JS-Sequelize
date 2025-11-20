@@ -1,9 +1,11 @@
 import express from "express";
 import userRouter from "./userRouter.js";
+import logRouter from "./logRouter.js";
 import { errorrHandling } from "../controllers/errorHandling.js";
 const route = express.Router();
 
 route.use("/api", userRouter);
+route.use("/api", logRouter);
 route.use("*", errorrHandling);
 route.use("*", (req, res) => {
   res.status(404).json({
