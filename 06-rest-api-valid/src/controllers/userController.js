@@ -1,16 +1,17 @@
 import sequelize from "../utils/db.js";
 import User from "../models/userModel.js";
 import { dataValid } from "../validation/dataValidation.js";
+import { advancedDataValid } from "../validation/advancedValidation.js";
 const setUser = async (req, res, next) => {
   const t = await sequelize.transaction();
   const valid = {
-    name: "required",
+    name: "required,isLength:3,50",
     email: "required,isEmail",
     password: "required,isStrongPassword",
   };
   try {
     // const user = req.body;
-    const user = await dataValid(valid, req.body);
+    const user = await advancedDataValid(valid, req.body);
     if (user.message.length > 0) {
       return res.status(400).json({
         errors: user.message,
