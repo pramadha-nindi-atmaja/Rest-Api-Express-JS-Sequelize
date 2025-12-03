@@ -18,7 +18,7 @@ const setContact = async (req, res, next) => {
     delete contact["Addresses"];
     // validasi contacts
     const validContact = {
-      firstName: "requered",
+      firstName: "required",
     };
     contact = await dataValid(validContact, contact);
     lstError.push(...contact.message);
@@ -217,7 +217,7 @@ const updateContact = async (req, res, next) => {
 
     // buat rules validasi
     const validContact = {
-      firstName: "requered",
+      firstName: "required",
     };
     // bersihkand data dan validasi
     contact = await dataValid(validContact, contact);

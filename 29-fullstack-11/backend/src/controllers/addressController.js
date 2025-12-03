@@ -58,10 +58,10 @@ const updateAddress = async (req, res, next) => {
   try {
     const id = req.params.id;
     const validAddress = {
-      addressType: "requered",
-      street: "requered",
-      province: "requered",
-      country: "requered",
+      addressType: "required",
+      street: "required",
+      province: "required",
+      country: "required",
     };
     const address = await dataValid(validAddress, req.body);
     if (address.message.length > 0) {
@@ -102,10 +102,10 @@ const updateAddress = async (req, res, next) => {
   }
 };
 
-const deleteAddress = (req, res, next) => {
+const deleteAddress = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const addressDelete = Address.destroy({
+    const addressDelete = await Address.destroy({
       where: {
         addressId: id,
       },
@@ -135,10 +135,10 @@ const addNewAddress = async (req, res, next) => {
   try {
     const contactId = req.params.id;
     const validAddress = {
-      addressType: "requered",
-      street: "requered",
-      province: "requered",
-      country: "requered",
+      addressType: "required",
+      street: "required",
+      province: "required",
+      country: "required",
     };
     const address = await dataValid(validAddress, req.body);
     if (address.message.length > 0) {
