@@ -17,10 +17,10 @@ const setUser = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
     const valid = {
-      name: "requered",
-      email: "requered,isEmail",
-      password: "requered,isStrongPassword",
-      conformPassword: "requered",
+      name: "required",
+      email: "required,isEmail",
+      password: "required,isStrongPassword",
+      conformPassword: "required",
     };
     const users = await dataValid(valid, req.body);
     if (users.data.password !== users.data.conformPassword) {
@@ -154,8 +154,8 @@ const setActivateUser = async (req, res, next) => {
 const setLogin = async (req, res, next) => {
   try {
     const valid = {
-      email: "requered,isEmail",
-      password: "requered",
+      email: "required,isEmail",
+      password: "required",
     };
     const user = await dataValid(valid, req.body);
     const data = user.data;
@@ -283,14 +283,14 @@ const updateUser = async (req, res, next) => {
     const user_id = req.params.id;
     const valid = {};
     if (isExists(req.body.name)) {
-      valid.name = "requered";
+      valid.name = "required";
     }
     if (isExists(req.body.email)) {
-      valid.email = "requered,isEmail";
+      valid.email = "required,isEmail";
     }
     if (isExists(req.body.password)) {
-      valid.password = "requered,isStrongPassword";
-      valid.confirmPassword = "requered";
+      valid.password = "required,isStrongPassword";
+      valid.confirmPassword = "required";
     }
     const user = await dataValid(valid, req.body);
     if (
@@ -335,10 +335,10 @@ const updateUser = async (req, res, next) => {
   }
 };
 
-const deleteUser = (req, res, next) => {
+const deleteUser = async (req, res, next) => {
   try {
     const user_id = req.params.id;
-    const userDelete = User.destroy({
+    const userDelete = await User.destroy({
       where: {
         userId: user_id,
       },
@@ -366,7 +366,7 @@ const forgotPassword = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
     const valid = {
-      email: "requered,isEmail",
+      email: "required,isEmail",
     };
     const userData = await dataValid(valid, req.body);
     if (userData.message.length > 0) {
@@ -399,7 +399,7 @@ const forgotPassword = async (req, res, next) => {
       },
       {
         where: {
-          user_id: user.userId,
+          userId: user.userId,
         },
         transaction: t,
       }
