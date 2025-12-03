@@ -29,7 +29,7 @@ const verifyAccessToken = (token) => {
   try {
     return JsonWebToken.verify(token, process.env.JWT_SECRET);
   } catch (err) {
-    null;
+    return null;
   }
 };
 
